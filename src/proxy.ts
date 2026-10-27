@@ -1,52 +1,65 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { verifyAccessToken } from "@/lib/auth";
 
 /**
- * Auth Proxy / Route Guard Middleware
+ * Proxy / Route Guard Middleware - CoSpace
  *
- * Enforces role-based access control and session verification:
- * - Unauthenticated requests to private or admin routes redirect to /login
- * - Authenticated requests lacking the "admin" role redirect away from /admin
+ * Control de acceso basado en roles y verificación de sesión con cookies HTTP-Only:
+ * - Solicitudes no autenticadas a rutas privadas o admin redirigen a /login
+ * - Usuarios autenticados sin rol "ADMIN" no pueden acceder a /admin
+ * - Usuarios con sesión activa intentando entrar a /login o /register redirigen a /dashboard
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const authToken = request.cookies.get("auth-token")?.value;
-  const userRole = request.cookies.get("user-role")?.value || "user";
+  const accessToken = request.cookies.get("access_token")?.value;
+  const fallbackUserRole = request.cookies.get("user_role")?.value || "USER";
+  const decodedToken = accessToken
+    ? await verifyAccessToken(accessToken)
+    : null;
+  const userRole = decodedToken?.role || fallbackUserRole;
+  const hasValidSession = Boolean(accessToken && decodedToken);
 
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/register");
   const isPrivateRoute =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/settings");
+    pathname.startsWith("/dashboard") || pathname.startsWith("/reservations");
   const isAdminRoute = pathname.startsWith("/admin");
+  const isPublicCatalogRoute =
+    pathname === "/catalogo" || pathname.startsWith("/catalogo/");
 
-  // If unauthenticated user tries to access protected areas, redirect to /login
-  if ((isPrivateRoute || isAdminRoute) && !authToken) {
+  if ((isPrivateRoute || isAdminRoute) && !hasValidSession) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // If authenticated user without admin role accesses admin area, forbid or redirect to dashboard
-  if (isAdminRoute && userRole !== "admin") {
+  if (isAdminRoute && userRole !== "ADMIN") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // If already authenticated user visits auth routes, redirect to dashboard
-  if (isAuthRoute && authToken) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (isAuthRoute && hasValidSession) {
+    const destination = userRole === "ADMIN" ? "/admin" : "/dashboard";
+    if (pathname !== destination) {
+      return NextResponse.redirect(new URL(destination, request.url));
+    }
+  }
+
+  if (isPublicCatalogRoute && userRole === "ADMIN") {
+    return NextResponse.next();
   }
 
   return NextResponse.next();
 }
 
-// Backward compatibility alias for runtime/tooling expectations
+// Alias para compatibilidad con Next.js middleware runtime
 export const middleware = proxy;
 
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/settings/:path*",
+    "/reservations/:path*",
     "/admin/:path*",
     "/login",
     "/register",

@@ -1,0 +1,39 @@
+name: CI Pipeline - CoSpace
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    name: Lint, Types & Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Instalar dependencias (ejecuta postinstall con prisma generate)
+        run: npm ci
+
+      - name: Verificar Tipado de TypeScript
+        run: npm run typecheck
+
+      - name: Verificar Calidad de Código (Biome)
+        run: npm run lint
+
+      - name: Verificar Compilación de Next.js
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/cospace"
+          DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/cospace"
+          JWT_ACCESS_SECRET: "ci-testing-access-secret-key"
+          JWT_REFRESH_SECRET: "ci-testing-refresh-secret-key"

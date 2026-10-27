@@ -1,22 +1,39 @@
-import Link from "next/link";
+"use client";
+
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
+import { useAuth } from "@/features/auth";
+import { AuthSplit } from "@/features/auth/components/auth-split";
+import { LanguageSwitcher } from "@/shared/components/language-switcher";
 
 export default function AuthLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const t = useTranslations("auth");
+  const { user } = useAuth();
+  const homeHref = user
+    ? user.role === "ADMIN"
+      ? "/admin"
+      : "/dashboard"
+    : "/";
+
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 dark:bg-gray-950 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 shadow-md rounded-lg p-6 border border-gray-200 dark:border-gray-800">
-        <div className="mb-6 text-center">
-          <Link href="/" className="text-xl font-bold">
-            Lumen Authentication
-          </Link>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
-        </div>
-        {children}
+    <div className="relative">
+      <div className="absolute right-4 top-4 z-10">
+        <LanguageSwitcher />
       </div>
+      <AuthSplit
+        brand={{ name: "CoSpace", href: homeHref }}
+        testimonial={{
+          quote: t("testimonialQuote"),
+          author: t("testimonialAuthor"),
+          role: t("testimonialRole"),
+        }}
+      >
+        {children}
+      </AuthSplit>
     </div>
   );
 }
