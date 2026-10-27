@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { getAuthUser } from "@/lib/auth";
+import { isValidReservationWindow } from "@/lib/booking-rules";
 import { db } from "@/lib/db";
 
 // GET: Listar reservas propias del usuario autenticado[cite: 2, 5]
