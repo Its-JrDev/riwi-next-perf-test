@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { getAuthUser } from "@/lib/auth";
-import { hasTimeOverlap, isValidReservationWindow } from "@/lib/booking-rules";
 import { db } from "@/lib/db";
 
 // GET: Listar reservas propias del usuario autenticado[cite: 2, 5]
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     // Regla 7: No se puede reservar un espacio desactivado[cite: 3]
     const space = await db.space.findUnique({ where: { id: spaceId } });
-    if (!space || !space.isActive) {
+    if (!space?.isActive) {
       return errorResponse(
         "El espacio especificado no existe o está desactivado",
         400,

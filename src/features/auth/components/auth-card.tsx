@@ -86,11 +86,11 @@ export function AuthCard({
             {socialProviders && socialProviders.length > 0 && (
               <>
                 <div className="grid grid-cols-1 gap-2">
-                  {socialProviders.map((provider, idx) => {
+                  {socialProviders.map((provider) => {
                     const Icon = provider.icon;
                     return (
                       <Button
-                        key={idx}
+                        key={provider.name}
                         variant="outline"
                         className="w-full gap-2 text-xs font-medium"
                         onClick={provider.onClick}

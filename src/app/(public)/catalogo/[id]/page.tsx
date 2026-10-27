@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ReservationDialog } from "@/features/reservations";
 import type { Space } from "@/features/spaces";
 import { db } from "@/lib/db";
@@ -82,7 +82,9 @@ export default async function SpaceDetailPage({
               <span className="text-3xl font-extrabold text-primary">
                 ${Number(space.pricePerHour).toLocaleString()}
               </span>
-              <span className="text-xs text-muted-foreground">{t("perHour")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("perHour")}
+              </span>
             </div>
 
             {space.isActive ? (

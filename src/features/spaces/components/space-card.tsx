@@ -68,7 +68,7 @@ export function SpaceCard({
           {space.description}
         </p>
         <div className="text-lg font-bold text-primary">
-          ${Number(space.pricePerHour).toLocaleString()} {" "}
+          {Number(space.pricePerHour).toLocaleString()}{" "}
           <span className="text-xs font-normal text-muted-foreground">
             {t("perHour")}
           </span>

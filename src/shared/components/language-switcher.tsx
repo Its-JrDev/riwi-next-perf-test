@@ -36,6 +36,7 @@ export function LanguageSwitcher() {
 
   const handleLocaleChange = (nextLocale: Locale) => {
     setValue(nextLocale);
+    // biome-ignore lint/suspicious/noDocumentCookie: locale persistence requires the browser cookie API.
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; SameSite=Lax`;
     window.location.reload();
   };

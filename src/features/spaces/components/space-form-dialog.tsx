@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslations } from "next-intl";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -87,9 +87,7 @@ export function SpaceFormDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button>
-            {isEditing ? t("editSpace") : `+ ${t("newSpace")}`}
-          </Button>
+          <Button>{isEditing ? t("editSpace") : `+ ${t("newSpace")}`}</Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

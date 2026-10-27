@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-response";
 import { db } from "@/lib/db";
 

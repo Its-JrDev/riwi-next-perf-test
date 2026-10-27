@@ -12,8 +12,11 @@ export function ReservationsList() {
   if (loading) {
     return (
       <div className="space-y-3">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-20 animate-pulse rounded-lg bg-muted" />
+        {Array.from(
+          { length: 3 },
+          (_, index) => `loading-slot-${index + 1}`,
+        ).map((key) => (
+          <div key={key} className="h-20 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>
     );

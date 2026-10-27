@@ -19,7 +19,7 @@ export function useAuth() {
       const currentUser = await authService.me();
       setUser(currentUser);
       return currentUser;
-    } catch (err) {
+    } catch (_err) {
       setUser(null);
       return null;
     } finally {

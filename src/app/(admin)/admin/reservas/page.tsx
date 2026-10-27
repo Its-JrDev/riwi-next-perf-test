@@ -139,9 +139,12 @@ export default function AdminReservationsPage() {
 
           {loading ? (
             <div className="grid gap-3">
-              {[...Array(4)].map((_, index) => (
+              {Array.from(
+                { length: 4 },
+                (_, index) => `reservation-skeleton-${index + 1}`,
+              ).map((key) => (
                 <div
-                  key={index}
+                  key={key}
                   className="h-16 animate-pulse rounded-md bg-muted"
                 />
               ))}
