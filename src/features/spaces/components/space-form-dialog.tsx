@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ChangeEvent, type ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -39,6 +39,8 @@ export function SpaceFormDialog({
 }: SpaceFormDialogProps) {
   const t = useTranslations("catalog");
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const { createSpace, updateSpace, loading, error } = useSpaces();
   const isEditing = Boolean(space);
 
@@ -46,11 +48,15 @@ export function SpaceFormDialog({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<SpaceFormValues>({
     resolver: zodResolver(spaceSchema),
     defaultValues,
   });
+
+  const imageUrl = watch("imageUrl");
 
   useEffect(() => {
     if (space) {
@@ -80,6 +86,43 @@ export function SpaceFormDialog({
       onSaved?.();
     } catch {
       // El error es manejado por el hook useSpaces
+    }
+  };
+
+  const handleImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/uploads/image", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success || !result.data?.url) {
+        throw new Error(result.error || "No se pudo subir la imagen");
+      }
+
+      setValue("imageUrl", result.data.url, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    } catch (uploadException) {
+      setUploadError(
+        uploadException instanceof Error
+          ? uploadException.message
+          : "No se pudo subir la imagen",
+      );
+    } finally {
+      setUploading(false);
+      event.target.value = "";
     }
   };
 
@@ -152,13 +195,33 @@ export function SpaceFormDialog({
             )}
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="imageUrl">{t("imageUrl")}</Label>
+          <div className="space-y-2">
+            <Label htmlFor="imageFile">Imagen del espacio</Label>
             <Input
-              id="imageUrl"
-              placeholder="https://images.unsplash.com/..."
-              {...register("imageUrl")}
+              id="imageFile"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={uploading || loading}
+              onChange={handleImageChange}
             />
+            <input type="hidden" {...register("imageUrl")} />
+
+            {uploading && (
+              <p className="text-xs text-muted-foreground">
+                Subiendo imagen...
+              </p>
+            )}
+            {uploadError && (
+              <p className="text-xs text-destructive">{uploadError}</p>
+            )}
+            {imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageUrl}
+                alt="Vista previa del espacio"
+                className="h-36 w-full rounded-md border object-cover"
+              />
+            )}
             {errors.imageUrl && (
               <p className="text-xs text-destructive">
                 {errors.imageUrl.message}
