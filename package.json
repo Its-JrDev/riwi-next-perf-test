@@ -10,6 +10,7 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "s3:migrate-space-images": "tsx scripts/migrate-space-images.ts",
     "postinstall": "prisma generate",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
